@@ -1,8 +1,5 @@
 # This is the main binary. List your C files here.
-add_executable(threads
-    threads.c
-    safe.c
-    led.c
+add_executable(signaling.c
 )
 
 pico_set_program_name(threads "test")
