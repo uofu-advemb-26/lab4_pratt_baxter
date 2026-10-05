@@ -1,3 +1,5 @@
+# fifo.c hasn't been written yet; build its test once src/fifo.c exists.
+if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/../src/fifo.c)
 add_executable(lab4_test_fifo test_fifo.c ../src/fifo.c unity_config.c)
 target_link_libraries(lab4_test_fifo PRIVATE
   pico_stdlib
@@ -8,11 +10,12 @@ target_link_libraries(lab4_test_fifo PRIVATE
 )
 pico_enable_stdio_uart(lab4_test_fifo 0)
 pico_enable_stdio_usb(lab4_test_fifo 1)
-add_custom_target(flash_test_
+add_custom_target(flash_test_fifo
     picotool load -f $<TARGET_FILE:lab4_test_fifo> DEPENDS lab4_test_fifo)
+endif()
 
 
-add_executable(lab4_test_signal test_signal.c ../src/signal.c unity_config.c)
+add_executable(lab4_test_signal test_signal.c ../src/signaling.c unity_config.c)
 target_link_libraries(lab4_test_signal PRIVATE
   pico_stdlib
   pico_async_context_freertos
