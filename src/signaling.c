@@ -13,5 +13,5 @@ BaseType_t signal_request_calculate(SemaphoreHandle_t request, SemaphoreHandle_t
 {
     xSemaphoreGive(request);
 
-    return xQueueSemaphoreTake(response, portMAX_DELAY);
+    return xQueueSemaphoreTake(response, 1000);
 }
