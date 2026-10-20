@@ -1,63 +1,29 @@
-add_executable(test_all 
-  test.c
-  test_safe_increment.c
-  test_safe_hello.c
-  ../src/safe.c
-  test_led.c
-  ../src/led.c
-  test_deadlocks.c
-  ../src/deadlocks.c
-  unity_config.c
-  ../src/orphaned.c
-  test_orphaned.c
-)
-
-target_link_libraries(test_all PRIVATE
+# fifo.c hasn't been written yet; build its test once src/fifo.c exists.
+if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/../src/fifo.c)
+add_executable(lab4_test_fifo test_fifo.c ../src/fifo.c unity_config.c)
+target_link_libraries(lab4_test_fifo PRIVATE
   pico_stdlib
   pico_async_context_freertos
   FreeRTOS-Kernel-Heap4
+  pico_cyw43_arch_none
   unity
 )
-
-# The CYW43 is the Wifi/Bluetooth module. If the board is set to pico_w, this
-# variable will be set and the wireless libraries added.
-if(PICO_CYW43_SUPPORTED)
-    target_link_libraries(test_all PRIVATE
-        pico_cyw43_arch_none
-    )
+pico_enable_stdio_uart(lab4_test_fifo 1)
+pico_enable_stdio_usb(lab4_test_fifo 0)
+add_custom_target(flash_test_fifo
+    picotool load -f $<TARGET_FILE:lab4_test_fifo> DEPENDS lab4_test_fifo)
 endif()
 
-# Modify the below lines to enable/disable output over UART/USB.
-# These are mutually exclusive, only set one.
-pico_enable_stdio_uart(test_all 1)
-pico_enable_stdio_usb(test_all 0)
 
-# This will speed up the simulation, since data won't be copied from the flash controller.
-# It does make the binary non-persistent on a real microcontroller.
-# pico_set_binary_type(test_all no_flash)
-
-find_program(RENODE renode
-# This is extra stuff so it can find the mac installation paths.
- NAMES macos_run.command Renode.exe
- PATHS /Applications/Renode.app/Contents/MacOS)
-
-set(RENODE_FLAGS
-  --disable-xwt
-  --port -2
-  --pid-file renode.pid
-  --console
-  )
-
-add_test(NAME simulate_test_all COMMAND
-    ${RENODE}
-     ${RENODE_FLAGS}
-    -e "$ELF=@$<TARGET_FILE:test_all>; $WORKING=@${CMAKE_SOURCE_DIR}; include @${CMAKE_SOURCE_DIR}/test/simulate.resc; start"
-    )
-
-
-find_program(OPENOCD openocd)
-find_program(PICOTOOL picotool)
-
-add_custom_target(flash_test ${PICOTOOL} load -f $<TARGET_FILE:test_all> DEPENDS test_all)
-add_custom_target(openocd_test ${OPENOCD} -s ${OPENOCD_PATH} -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c 'adapter speed 5000' -c 'program "$<TARGET_FILE:test_all>" verify reset exit' DEPENDS test_all)
-
+add_executable(lab4_test_signal test_signal.c ../src/signaling.c unity_config.c)
+target_link_libraries(lab4_test_signal PRIVATE
+  pico_stdlib
+  pico_async_context_freertos
+  FreeRTOS-Kernel-Heap4
+  pico_cyw43_arch_none
+  unity
+)
+pico_enable_stdio_uart(lab4_test_signal 1)
+pico_enable_stdio_usb(lab4_test_signal 0)
+add_custom_target(flash_test_signal
+    picotool load -f $<TARGET_FILE:lab4_test_signal> DEPENDS lab4_test_signal)
